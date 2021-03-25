@@ -1,5 +1,7 @@
-﻿{% extends "base.html" %} {% block titulo %} Agregar canción {% endblock %} {% block contenido_principal %}<h2>
-    Agregarcanción</h2>
+﻿{% extends "base.html" %}
+{% block titulo %} Agregar canción {% endblock %}
+{% block contenido_principal %}
+<h2>Agregar canción</h2>
 <form class="form-horizontal" method="post" action="/cancion">
     <div class="form-group">
         <label class="control-label col-sm-2" for="nombre">Nombre:</label>
@@ -43,4 +45,5 @@
             <button type="submit" class="btn btn-primary">Agregar</button>
         </div>
     </div>
-</form>{% endblock %}
+</form>
+{% endblock %}
