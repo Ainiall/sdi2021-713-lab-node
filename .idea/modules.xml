@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/.idea/NodeJs.iml" filepath="$PROJECT_DIR$/.idea/NodeJs.iml" />
+      <module fileurl="file://$PROJECT_DIR$/../sdi2021-713-lab-node/.idea/sdi2021-713-lab-node.iml" filepath="$PROJECT_DIR$/../sdi2021-713-lab-node/.idea/sdi2021-713-lab-node.iml" />
     </modules>
   </component>
 </project>
