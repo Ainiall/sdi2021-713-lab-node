@@ -23,7 +23,8 @@ module.exports = function (app, swig) {
     });
     //debe ir antes de :id
     app.get('/autores/agregar', function (req, res) {
-        let respuesta = swig.renderFile('views/autores-agregar.html', {});
+        let array= ['Cantante','Batería','Guitarrista','Bajista','Teclista']
+        let respuesta = swig.renderFile('views/autores-agregar.html', {roles: array});
         res.send(respuesta);
     })
 
@@ -33,14 +34,14 @@ module.exports = function (app, swig) {
     });
 
     app.post('/autor', function (req, res) {
-        let msg="";
-        if(typeof(req.body.nombre) === undefined || req.body.nombre.toString().trim().length===0){
+        let msg='';
+        if(typeof(req.body.nombre) === undefined || req.body.nombre.trim().length===0){
             msg+='\n---Nombre no enviado en la petición.'
         }
-        if(typeof(req.body.grupo) === undefined || req.body.grupo.toString().trim().length===0){
+        if(typeof(req.body.grupo) === undefined || req.body.grupo.trim().length===0){
             msg+='\n---Grupo no enviado en la petición.'
         }
-        if(typeof(req.body.rol) === undefined || req.body.rol.toString().trim().length===0){
+        if(typeof(req.body.rol) === undefined || req.body.rol.trim().length===0){
             msg+='\n---Rol no enviado en la petición.'
         }
         res.send('Autor agregado:' + req.body.nombre + '<br>'
@@ -51,7 +52,7 @@ module.exports = function (app, swig) {
     });
 
     app.get('/autores*', function (req, res) {
-        res.redirect('autores');
+        res.redirect('/autores');
     })
 
 };
