@@ -4,6 +4,24 @@ module.exports = {
         this.mongo = mongo;
         this.app = app;
         // funcion asincrona
+    }
+    ,
+    modificarCancion: function (criterio, cancion, funcionCallback) {
+        this.mongo.MongoClient.connect(this.app.get('db'), function (err, db) {
+            if (err) {
+                funcionCallback(null);
+            } else {
+                let collection = db.collection('canciones');
+                collection.update(criterio, {$set: cancion}, function (err, result) {
+                    if (err) {
+                        funcionCallback(null);
+                    } else {
+                        funcionCallback(result);
+                    }
+                    db.close();
+                });
+            }
+        });
     },
     obtenerUsuarios: function (criterio, funcionCallback) {
         this.mongo.MongoClient.connect(this.app.get('db'), function (err, db) {
@@ -21,7 +39,8 @@ module.exports = {
                 });
             }
         });
-    },
+    }
+    ,
     insertarUsuario: function (usuario, funcionCallback) {
         this.mongo.MongoClient.connect(this.app.get('db'), function (err, db) {
             if (err) {
@@ -38,7 +57,9 @@ module.exports = {
                 });
             }
         });
-    }, obtenerCanciones: function (criterio, funcionCallback) {
+    }
+    ,
+    obtenerCanciones: function (criterio, funcionCallback) {
         this.mongo.MongoClient.connect(this.app.get('db'), function (err, db) {
             if (err) {
                 funcionCallback(null);
@@ -54,7 +75,9 @@ module.exports = {
                 });
             }
         });
-    }, insertarCancion: function (cancion, funcionCallback) {
+    }
+    ,
+    insertarCancion: function (cancion, funcionCallback) {
         this.mongo.MongoClient.connect(this.app.get('db'), function (err, db) {
             if (err) {
                 funcionCallback(null);
@@ -71,4 +94,5 @@ module.exports = {
             }
         });
     }
-};
+}
+;

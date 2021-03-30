@@ -34,7 +34,7 @@ module.exports = function (app, swig, gestorBD) {
         let seguro = app.get('crypto').createHmac('sha256', app.get('clave')).update(req.body.password).digest('hex');
         let criterio = {email: req.body.email, password: seguro}
         gestorBD.obtenerUsuarios(criterio, function (usuarios) {
-            if (usuarios == null || usuarios.length == 0) {
+            if (usuarios == null || usuarios.length === 0) {
                 req.session.usuario = null;
                 res.send('No identificado: ');
             } else {
