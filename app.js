@@ -69,7 +69,7 @@ app.set('crypto', crypto);
 require('./routes/rusuarios.js')(app, swig, gestorBD);  // (app, param1, param2, etc.)
 require('./routes/rcanciones.js')(app, swig, gestorBD);  // (app, param1, param2, etc.)
 require('./routes/rautores.js')(app, swig);  // (app, param1, param2, etc.)
-
+require('./routes/rcomentarios.js')(app, swig, gestorBD);
 // lanzar server
 app.listen(app.get('port'), function () {
     console.log('Servidor activo');
