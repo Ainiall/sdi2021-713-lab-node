@@ -30,6 +30,7 @@ routerUsuarioSession.use(function (req, res, next) {
     if (req.session.usuario) {
         // dejamos correr la petición
         next();
+        return;
     } else {
         console.log('va a : ' + req.session.destino);
         res.redirect('/identificarse');
@@ -39,6 +40,8 @@ routerUsuarioSession.use(function (req, res, next) {
 app.use('/canciones/agregar', routerUsuarioSession);
 app.use('/publicaciones', routerUsuarioSession);
 app.use('/favoritos', routerUsuarioSession);
+app.use('/cancion/comprar', routerUsuarioSession);
+app.use('/compras', routerUsuarioSession);
 
 //router Usuario Autor
 let routerUsuarioAutor = express.Router();
@@ -51,6 +54,7 @@ routerUsuarioAutor.use(function (req, res, next) {
         console.log(canciones[0]);
         if (canciones[0].autor === req.session.usuario) {
             next();
+            return;
         } else {
             res.redirect('/tienda');
         }
@@ -70,8 +74,20 @@ routerAudios.use(function (req, res, next) {
     gestorBD.obtenerCanciones({'_id': mongo.ObjectID(idCancion)}, function (canciones) {
         if (req.session.usuario && canciones[0].autor === req.session.usuario) {
             next();
+            return;
         } else {
-            res.redirect('/tienda');
+            let criterio = {
+                usuario: req.session.usuario,
+                cancionId: mongo.ObjectID(idCancion)
+            };
+            gestorBD.obtenerCompras(criterio, function (compras) {
+                if (compras != null && compras.length > 0) {
+                    next();
+                    return;
+                } else {
+                    res.redirect('/tienda');
+                }
+            });
         }
     })
 });
@@ -87,6 +103,7 @@ app.set('db', 'mongodb://admin:sdi@tiendamusica-shard-00-00.0qjil.mongodb.net:27
     'tiendamusica-shard-00-02.0qjil.mongodb.net:27017/myFirstDatabase?ssl=true&replicaSet=atlas-4bmyod-shard-0&authSource=admin&retryWrites=true&w=majority');
 app.set('clave', 'abcdefg');
 app.set('crypto', crypto);
+
 //Rutas/controladores por lógica
 require('./routes/rusuarios.js')(app, swig, gestorBD);  // (app, param1, param2, etc.)
 require('./routes/rcanciones.js')(app, swig, gestorBD);  // (app, param1, param2, etc.)
