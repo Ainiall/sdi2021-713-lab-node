@@ -38,7 +38,7 @@ module.exports = function (app, swig, gestorBD) {
 
     app.get('/cancion/:id', function (req, res) {
         let criterio = {'_id': gestorBD.mongo.ObjectID(req.params.id)};
-        let criterioComentario = {"cancion_id": gestorBD.mongo.ObjectID(req.params.id)};
+        let criterioComentario = {'cancion_id': gestorBD.mongo.ObjectID(req.params.id)};
         gestorBD.obtenerCanciones(criterio, function (canciones) {
             if (canciones == null) {
                 res.send('Error al recuperar la canción.');
@@ -77,7 +77,7 @@ module.exports = function (app, swig, gestorBD) {
     app.get('/tienda', function (req, res) {
         let criterio = {};
         if (req.query.busqueda != null) {
-            criterio = {'nombre': {$regex: ".*" + req.query.busqueda + ".*"}};
+            criterio = {'nombre': {$regex: '.*' + req.query.busqueda + '.*'}};
         }
         gestorBD.obtenerCanciones(criterio, function (canciones) {
             if (canciones == null) {
@@ -112,9 +112,9 @@ module.exports = function (app, swig, gestorBD) {
                                 let audio = req.files.audio;
                                 audio.mv('public/audios/' + id + '.mp3', function (err) {
                                     if (err) {
-                                        res.send("Error al subir el audio");
+                                        res.send('Error al subir el audio');
                                     } else {
-                                        res.send("Agregada id:  " + id);
+                                        res.redirect('/publicaciones');
                                     }
                                 });
                             }
@@ -137,7 +137,7 @@ module.exports = function (app, swig, gestorBD) {
                     if (result == null) {
                         res.send('Error en la modificación');
                     } else {
-                        res.send('Modificado');
+                        res.redirect('/publicaciones');
                     }
                 });
             }
