@@ -38,7 +38,28 @@ routerUsuarioSession.use(function (req, res, next) {
 //Aplicar router Usuario Session
 app.use('/canciones/agregar', routerUsuarioSession);
 app.use('/publicaciones', routerUsuarioSession);
-app.use('/favoritos',routerUsuarioSession);
+app.use('/favoritos', routerUsuarioSession);
+
+//router Usuario Autor
+let routerUsuarioAutor = express.Router();
+routerUsuarioAutor.use(function (req, res, next) {
+    console.log('routerUsuarioAutor');
+    let path = require('path');
+    let id = path.basename(req.originalUrl);
+    // Cuidado porque req.params no funciona en el router si los params van en la URL.
+    gestorBD.obtenerCanciones({_id: mongo.ObjectID(id)}, function (canciones) {
+        console.log(canciones[0]);
+        if (canciones[0].autor === req.session.usuario) {
+            next();
+        } else {
+            res.redirect('/tienda');
+        }
+    })
+});
+//Aplicar router Usuario Autor
+app.use('/cancion/modificar', routerUsuarioAutor);
+app.use('/cancion/eliminar', routerUsuarioAutor);
+
 
 //router Audios
 let routerAudios = express.Router();

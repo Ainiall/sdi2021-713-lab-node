@@ -4,15 +4,14 @@ module.exports = {
         this.mongo = mongo;
         this.app = app;
         // funcion asincrona
-    }
-    ,
-    modificarCancion: function (criterio, cancion, funcionCallback) {
+    },
+    eliminarCancion: function (criterio, funcionCallback) {
         this.mongo.MongoClient.connect(this.app.get('db'), function (err, db) {
             if (err) {
                 funcionCallback(null);
             } else {
                 let collection = db.collection('canciones');
-                collection.update(criterio, {$set: cancion}, function (err, result) {
+                collection.remove(criterio, function (err, result) {
                     if (err) {
                         funcionCallback(null);
                     } else {
@@ -22,6 +21,24 @@ module.exports = {
                 });
             }
         });
+    }
+    ,
+    modificarCancion:function (criterio, cancion, funcionCallback) {
+    this.mongo.MongoClient.connect(this.app.get('db'), function (err, db) {
+        if (err) {
+            funcionCallback(null);
+        } else {
+            let collection = db.collection('canciones');
+            collection.update(criterio, {$set: cancion}, function (err, result) {
+                if (err) {
+                    funcionCallback(null);
+                } else {
+                    funcionCallback(result);
+                }
+                db.close();
+            });
+        }
+    });
     }
     ,
     obtenerUsuarios: function (criterio, funcionCallback) {
