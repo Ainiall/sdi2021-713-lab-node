@@ -28,7 +28,10 @@
                 <!--http://www.socicon.com/generator.php  -->
                 <div class="wrap">{{ cancion.nombre }}</div>
                 <div class="small">Autor: {{ cancion.autor }}</div>
-                <div class="text-right">{{ cancion.precio }} €</div>
+
+                <div class="text-right">
+                    <a href="/favoritos/add/{{ cancion._id.toString() }}">⭐</a>
+                    {{ cancion.precio }} €</div>
             </a></div>
     </div>
     {% endfor%}
