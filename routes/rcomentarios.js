@@ -1,7 +1,9 @@
 module.exports = function (app, swig, gestorBD) {
     app.post('/comentarios/:cancion_id', function (req, res) {
         if (req.session.usuario == null) {
-            res.send('Es necesario estar autenticado para poder comentar. Inicie sesión para poder hacerlo.');
+            req.session.errores = {mensaje:'Es necesario estar autenticado para poder comentar. ' +
+                    'Inicie sesión para poder hacerlo.'};
+            res.redirect('/error');
         } else {
             let comentario = {
                 autor: req.session.usuario,
@@ -12,7 +14,8 @@ module.exports = function (app, swig, gestorBD) {
             // Conectarse
             gestorBD.insertarComentario(comentario, function (id) {
                 if (id == null) {
-                    res.send('Error al insertar comentario');
+                    req.session.errores = {mensaje:'Error al insertar comentario.'};
+                    res.redirect('/error');
                 } else {
                     res.redirect('/cancion/'+gestorBD.mongo.ObjectID(req.params.cancion_id));
                 }
@@ -25,7 +28,8 @@ module.exports = function (app, swig, gestorBD) {
 
         gestorBD.obtenerComentarios(criterio, function (comentarios) {
             if (comentarios == null || comentarios[0].autor !== req.session.usuario) {
-                res.send('Solo se pueden eliminar comentarios propios');
+                req.session.errores = {mensaje:'Solo se pueden eliminar comentarios propios.'};
+                res.redirect('/error');
             } else {
                 let comentario = comentarios[0];
                 gestorBD.eliminarComentario(comentario, function (result) {
@@ -37,8 +41,5 @@ module.exports = function (app, swig, gestorBD) {
                 });
             }
         });
-
-
     });
-}
-;
+};

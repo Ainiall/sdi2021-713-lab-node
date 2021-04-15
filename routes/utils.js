@@ -1,10 +1,7 @@
 module.exports = function (app, swig) {
-    app.get('/errors', function (req, res) {
-        let respuesta = swig.renderFile('views/error.html',
-            {
-                mensaje: req.session.errores.mensaje,
-                tipoMensaje: req.session.errores.tipoMensaje
-            });
+    app.get('/error', function (req, res) {
+        // mejor no poner tipo mensaje, siempre van a ser errores
+        let respuesta = swig.renderFile('views/error.html', {mensaje:req.session.errores.mensaje});
         res.send(respuesta);
     });
-}
+};

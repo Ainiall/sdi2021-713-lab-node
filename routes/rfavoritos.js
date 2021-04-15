@@ -3,7 +3,8 @@ module.exports = function (app, swig, gestorBD) {
         let criterio = {'_id': gestorBD.mongo.ObjectID(req.params.cancion_id)};
         gestorBD.obtenerCanciones(criterio, function (canciones) {
             if (canciones == null) {
-                res.send('Error al marcar la canción como favorita.');
+                req.session.errores = {mensaje:'Error al marcar la canción como favorita.'};
+                res.redirect('/error');
             } else {
                 req.session.favoritos.push(canciones[0]);
                 res.redirect('/favoritos')
@@ -31,12 +32,12 @@ module.exports = function (app, swig, gestorBD) {
         let criterio = {'_id': gestorBD.mongo.ObjectID(req.params.cancion_id)};
         gestorBD.obtenerCanciones(criterio, function (canciones) {
             if (canciones == null) {
-                res.send('Error al obtener la canción.');
+                req.session.errores = {mensaje:'Error al obtener la canción.'};
+                res.redirect('/error');
             } else {
                 req.session.favoritos.splice(req.session.favoritos.indexOf(canciones));
                 res.redirect('/favoritos');
             }
         });
     });
-}
-;
+};
