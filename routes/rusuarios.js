@@ -36,9 +36,8 @@ module.exports = function (app, swig, gestorBD) {
         gestorBD.obtenerUsuarios(criterio, function (usuarios) {
             if (usuarios == null || usuarios.length === 0) {
                 req.session.usuario = null;
-                res.redirect('/identificarse'+
-                    '?mensaje=Email o password incorrecto'+
-                    '&tipoMensaje=alert-danger ');
+                req.session.errores = {mensaje:'Email o password incorrecto',tipoMensaje:'alert-danger'};
+                res.redirect('/errors');
             } else {
                 req.session.usuario = usuarios[0].email;
                 req.session.favoritos = [];
@@ -46,4 +45,5 @@ module.exports = function (app, swig, gestorBD) {
             }
         });
     });
+
 };

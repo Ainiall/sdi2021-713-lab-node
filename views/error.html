@@ -1,0 +1,6 @@
+{% extends "base.html" %}
+{% block titulo %} Pagina de error {% endblock %}
+
+{% block contenido_principal %}
+<div class='alert " {{tipoMensaje}} "'> {{mensaje}}</div>
+{% endblock %}

@@ -237,7 +237,10 @@ module.exports = function (app, swig, gestorBD) {
                     }
                 });
             } else{
-                res.send('No se puede comprar una canción propia, ni comprar varias veces');
+                req.session.errores = {mensaje:'No se puede comprar una canción propia, ni comprar varias veces',
+                    tipoMensaje:'alert-danger'
+                };
+                res.redirect('/errors');
             }
         })
 
