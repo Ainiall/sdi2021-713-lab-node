@@ -24,10 +24,14 @@ module.exports = function (app, swig, gestorBD) {
         gestorBD.insertarUsuario(usuario, function (id) {
             if (id == null) {
                 //res.redirect('/registrarse?mensaje=Error al registrar usuario');
-                req.session.errores = {mensaje:'Error al registrar usuario.'};
+                req.session.errores = {mensaje:'Error al registrar usuario.',};
                 res.redirect('/error');
             } else {
-                res.redirect('/identificarse?mensaje=Nuevo usuario registrado');
+                //res.redirect('/identificarse?mensaje=Nuevo usuario registrado');
+                req.session.errores = {
+                    mensaje:'Nuevo usuario registrado.',
+                    tipoMensaje:'alert-info'};
+                res.redirect('/error');
             }
         });
     });

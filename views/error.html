@@ -2,6 +2,14 @@
 {% block titulo %} Pagina de error {% endblock %}
 
 {% block contenido_principal %}
+
+{% if comprar === 'alert-danger' %}
 <h2>ERROR</h2>
-<div class='alert alert-danger'> {{mensaje}}</div>
+{% else %}
+<h2>INFO</h2>
+{% endif %}
+
+<div class='alert {{tipoMensaje}}'>
+    {{mensaje}}
+</div>
 {% endblock %}
