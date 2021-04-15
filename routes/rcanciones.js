@@ -39,21 +39,26 @@ module.exports = function (app, swig, gestorBD) {
     app.get('/cancion/:id', function (req, res) {
         let criterio = {'_id': gestorBD.mongo.ObjectID(req.params.id)};
         let criterioComentario = {'cancion_id': gestorBD.mongo.ObjectID(req.params.id)};
+        let usuario = req.session.usuario;
         gestorBD.obtenerCanciones(criterio, function (canciones) {
             if (canciones == null) {
                 res.send('Error al recuperar la canción.');
             } else {
-                gestorBD.obtenerComentarios(criterioComentario, function (comentarios) {
-                    if (comentarios == null) {
-                        res.send('No hay comentarios sobre esta canción.');
-                    } else {
-                        let respuesta = swig.renderFile('views/bcancion.html',
-                            {
-                                cancion: canciones[0],
-                                comentarios: comentarios
-                            });
-                        res.send(respuesta);
-                    }
+                cancionId= gestorBD.mongo.ObjectID(req.params.id);
+                sePuedeComprar(usuario,cancionId,function (puedeComprar) {
+                    gestorBD.obtenerComentarios(criterioComentario, function (comentarios) {
+                        if (comentarios == null) {
+                            res.send('No hay comentarios sobre esta canción.');
+                        } else {
+                            let respuesta = swig.renderFile('views/bcancion.html',
+                                {
+                                    cancion: canciones[0],
+                                    comentarios: comentarios,
+                                    comprar: puedeComprar
+                                });
+                            res.send(respuesta);
+                        }
+                    });
                 });
             }
         });
@@ -219,14 +224,24 @@ module.exports = function (app, swig, gestorBD) {
 
     app.get('/cancion/comprar/:id', function (req, res) {
         let cancionId = gestorBD.mongo.ObjectID(req.params.id);
-        let compra = {usuario: req.session.usuario, cancionId: cancionId}
-        gestorBD.insertarCompra(compra, function (idCompra) {
-            if (idCompra == null) {
-                res.send(respuesta);
-            } else {
-                res.redirect('/compras');
+        let usuario = req.session.usuario;
+        let compra = {usuario: usuario, cancionId: cancionId}
+
+        sePuedeComprar(usuario, cancionId, function (puedeComprar){
+            if(puedeComprar){
+                gestorBD.insertarCompra(compra, function (idCompra) {
+                    if (idCompra == null) {
+                        res.send(respuesta);
+                    } else {
+                        res.redirect('/compras');
+                    }
+                });
+            } else{
+                res.send('No se puede comprar una canción propia, ni comprar varias veces');
             }
-        });
+        })
+
+
     });
 
     app.get('/compras', function (req, res) {
@@ -250,5 +265,25 @@ module.exports = function (app, swig, gestorBD) {
             }
         });
     });
+
+
+    // AUXILIAR
+    function sePuedeComprar (usuario,cancionId, funcionCallback){
+        let criterio = {$and: [{'_id' : cancionId}, {'autor': usuario}]};
+        let criterio2 = {$and: [{'cancionId' : cancionId}, {'usuario': usuario}]};
+        gestorBD.obtenerCanciones(criterio,function (canciones){
+            if (canciones == null || canciones.length > 0) {
+                funcionCallback(false);
+            }else {
+                gestorBD.obtenerCompras(criterio2,function (compras) {
+                    if (compras == null || compras.length > 0){
+                        funcionCallback(false);
+                    }else{
+                        funcionCallback(true);
+                    }
+                });
+            }
+        });
+    }
 }
 ;
