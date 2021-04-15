@@ -18,32 +18,26 @@ module.exports = function (app, swig, gestorBD) {
         res.send('Usuario desconectado');
     });
 
-    app.post('/usuario', function (req, res) {
+    app.post('/usuario', function (req, res,next) {
         let seguro = app.get('crypto').createHmac('sha256', app.get('clave')).update(req.body.password).digest('hex');
         let usuario = {email: req.body.email, password: seguro}
         gestorBD.insertarUsuario(usuario, function (id) {
             if (id == null) {
-                //res.redirect('/registrarse?mensaje=Error al registrar usuario');
-                req.session.errores = {mensaje:'Error al registrar usuario.',};
-                res.redirect('/error');
+                next(new Error('Error al registrar usuario.'));
             } else {
-                //res.redirect('/identificarse?mensaje=Nuevo usuario registrado');
-                req.session.errores = {
-                    mensaje:'Nuevo usuario registrado.',
-                    tipoMensaje:'alert-info'};
-                res.redirect('/error');
+                // info, deberia seguir redirigiendo a identificarse
+                res.redirect('/identificarse?mensaje=Nuevo usuario registrado');
             }
         });
     });
 
-    app.post('/identificarse', function (req, res) {
+    app.post('/identificarse', function (req, res, next) {
         let seguro = app.get('crypto').createHmac('sha256', app.get('clave')).update(req.body.password).digest('hex');
         let criterio = {email: req.body.email, password: seguro}
         gestorBD.obtenerUsuarios(criterio, function (usuarios) {
             if (usuarios == null || usuarios.length === 0) {
                 req.session.usuario = null;
-                req.session.errores = {mensaje:'Email o password incorrecto.'};
-                res.redirect('/error');
+                next(new Error('Email o password incorrecto.'));
             } else {
                 req.session.usuario = usuarios[0].email;
                 req.session.favoritos = [];

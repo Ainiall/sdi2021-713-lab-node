@@ -1,10 +1,9 @@
-module.exports = function (app, swig, gestorBD) {
+module.exports = function (app, swig, gestorBD, next) {
     app.get('/favoritos/add/:cancion_id', function (req, res) {
         let criterio = {'_id': gestorBD.mongo.ObjectID(req.params.cancion_id)};
         gestorBD.obtenerCanciones(criterio, function (canciones) {
             if (canciones == null) {
-                req.session.errores = {mensaje:'Error al marcar la canción como favorita.'};
-                res.redirect('/error');
+                next(new Error('Error al marcar la canción como favorita.'));
             } else {
                 req.session.favoritos.push(canciones[0]);
                 res.redirect('/favoritos')
@@ -28,12 +27,11 @@ module.exports = function (app, swig, gestorBD) {
         res.send(respuesta);
     });
 
-    app.get('/favoritos/eliminar/:cancion_id', function (req, res) {
+    app.get('/favoritos/eliminar/:cancion_id', function (req, res, next) {
         let criterio = {'_id': gestorBD.mongo.ObjectID(req.params.cancion_id)};
         gestorBD.obtenerCanciones(criterio, function (canciones) {
             if (canciones == null) {
-                req.session.errores = {mensaje:'Error al obtener la canción.'};
-                res.redirect('/error');
+                next(new Error('Error al obtener la canción.'));
             } else {
                 req.session.favoritos.splice(req.session.favoritos.indexOf(canciones));
                 res.redirect('/favoritos');

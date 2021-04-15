@@ -24,12 +24,11 @@ module.exports = function (app, swig, gestorBD) {
         res.send(respuesta);
     });
 
-    app.get('/cancion/modificar/:id', function (req, res) {
+    app.get('/cancion/modificar/:id', function (req, res, next) {
         let criterio = {'_id': gestorBD.mongo.ObjectID(req.params.id)};
         gestorBD.obtenerCanciones(criterio, function (canciones) {
             if (canciones == null) {
-                req.session.errores = {mensaje:'Error al modificar la canción.'};
-                res.redirect('/error');
+                next(new Error('Error al modificar la canción.'));
             } else {
                 let respuesta = swig.renderFile('views/bcancionModificar.html', {cancion: canciones[0]});
                 res.send(respuesta);
@@ -37,21 +36,19 @@ module.exports = function (app, swig, gestorBD) {
         });
     });
 
-    app.get('/cancion/:id', function (req, res) {
+    app.get('/cancion/:id', function (req, res, next) {
         let criterio = {'_id': gestorBD.mongo.ObjectID(req.params.id)};
         let criterioComentario = {'cancion_id': gestorBD.mongo.ObjectID(req.params.id)};
         let usuario = req.session.usuario;
         gestorBD.obtenerCanciones(criterio, function (canciones) {
             if (canciones == null) {
-                req.session.errores = {mensaje:'Error al recuperar la canción.'};
-                res.redirect('/error');
+                next(new Error('Error al recuperar la canción.'));
             } else {
-                cancionId= gestorBD.mongo.ObjectID(req.params.id);
+                let cancionId= gestorBD.mongo.ObjectID(req.params.id);
                 sePuedeComprar(usuario,cancionId,function (puedeComprar) {
                     gestorBD.obtenerComentarios(criterioComentario, function (comentarios) {
                         if (comentarios == null) {
-                            req.session.errores = {mensaje:'No hay comentarios sobre esta canción.'};
-                            res.redirect('/error');
+                            next(new Error('No hay comentarios sobre esta canción.'));
                         } else {
                             let respuesta = swig.renderFile('views/bcancion.html',
                                 {
@@ -82,7 +79,7 @@ module.exports = function (app, swig, gestorBD) {
         res.send(String(respuesta));
     });
 
-    app.get('/tienda', function (req, res) {
+    app.get('/tienda', function (req, res, next) {
         let criterio = {};
         if (req.query.busqueda != null) {
             criterio = {'nombre': {$regex: '.*' + req.query.busqueda + '.*'}};
@@ -94,8 +91,7 @@ module.exports = function (app, swig, gestorBD) {
 
         gestorBD.obtenerCancionesPg(criterio, pg, function (canciones, total) {
             if (canciones == null) {
-                req.session.errores = {mensaje:'Error al listar.'};
-                res.redirect('/error');
+                next(new Error('Error al listar.'));
             } else {
                 let ultimaPg = total / 4;
                 if (total % 4 > 0) {// Sobran decimales
@@ -114,7 +110,7 @@ module.exports = function (app, swig, gestorBD) {
         });
     });
 
-    app.post('/cancion', function (req, res) {
+    app.post('/cancion', function (req, res, next) {
         let cancion = {
             nombre: req.body.nombre,
             genero: req.body.genero,
@@ -125,22 +121,19 @@ module.exports = function (app, swig, gestorBD) {
         // Conectarse
         gestorBD.insertarCancion(cancion, function (id) {
             if (id == null) {
-                req.session.errores = {mensaje:'Error al insertar canción.'};
-                res.redirect('/error');
+                next(new Error('Error al insertar canción.'));
             } else {
                 if (req.files.portada != null) {
                     var imagen = req.files.portada;
                     imagen.mv('public/portadas/' + id + '.png', function (err) {
                         if (err) {
-                            req.session.errores = {mensaje:'Error al subir la portada.'};
-                            res.redirect('/error');
+                            next(new Error('Error al subir la portada.'));
                         } else {
                             if (req.files.audio != null) {
                                 let audio = req.files.audio;
                                 audio.mv('public/audios/' + id + '.mp3', function (err) {
                                     if (err) {
-                                        req.session.errores = {mensaje:'Error al subir el audio.'};
-                                        res.redirect('/error');
+                                        next(new Error('Error al subir el audio.'));
                                     } else {
                                         res.redirect('/publicaciones');
                                     }
@@ -153,19 +146,17 @@ module.exports = function (app, swig, gestorBD) {
         });
     });
 
-    app.post('/cancion/modificar/:id', function (req, res) {
+    app.post('/cancion/modificar/:id', function (req, res, next) {
         let id = req.params.id;
         let criterio = {'_id': gestorBD.mongo.ObjectID(id)};
         let cancion = {nombre: req.body.nombre, genero: req.body.genero, precio: req.body.precio}
         gestorBD.modificarCancion(criterio, cancion, function (result) {
             if (result == null) {
-                req.session.errores = {mensaje:'Error al modificar.'};
-                res.redirect('/error');
+                next(new Error('Error al modificar.'));
             } else {
                 paso1ModificarPortada(req.files, id, function (result) {
                     if (result == null) {
-                        req.session.errores = {mensaje:'Error en la modificación.'};
-                        res.redirect('/error');
+                        next(new Error('Error en la modificación.'));
                     } else {
                         res.redirect('/publicaciones');
                     }
@@ -208,12 +199,11 @@ module.exports = function (app, swig, gestorBD) {
         res.send('Respuesta patrón promo* ');
     });
 
-    app.get('/publicaciones', function (req, res) {
+    app.get('/publicaciones', function (req, res, next) {
         let criterio = {autor: req.session.usuario};
         gestorBD.obtenerCanciones(criterio, function (canciones) {
             if (canciones == null) {
-                req.session.errores = {mensaje:'Error al listar.'};
-                res.redirect('/error');
+                next(new Error('Error al listar.'));
             } else {
                 let respuesta = swig.renderFile('views/bpublicaciones.html', {canciones: canciones});
                 res.send(respuesta);
@@ -221,19 +211,19 @@ module.exports = function (app, swig, gestorBD) {
         });
     });
 
-    app.get('/cancion/eliminar/:id', function (req, res) {
+    app.get('/cancion/eliminar/:id', function (req, res, next) {
         let criterio = {'_id': gestorBD.mongo.ObjectID(req.params.id)};
         gestorBD.eliminarCancion(criterio, function (canciones) {
             if (canciones == null) {
-                req.session.errores = {mensaje:'Error al eliminar la canción.'};
-                res.redirect('/error');
+                next(new Error('Error al eliminar la canción.'));
             } else {
-                res.redirect('/publicaciones');
+                // info
+                res.redirect('/publicaciones?mensaje=Canción eliminada');
             }
         });
     });
 
-    app.get('/cancion/comprar/:id', function (req, res) {
+    app.get('/cancion/comprar/:id', function (req, res, next) {
         let cancionId = gestorBD.mongo.ObjectID(req.params.id);
         let usuario = req.session.usuario;
         let compra = {usuario: usuario, cancionId: cancionId}
@@ -242,27 +232,25 @@ module.exports = function (app, swig, gestorBD) {
             if(puedeComprar){
                 gestorBD.insertarCompra(compra, function (idCompra) {
                     if (idCompra == null) {
-                        req.session.errores = {mensaje:'Error al comprar la canción.'};
-                        res.redirect('/error');
+                        next(new Error('Error al comprar la canción.'));
                     } else {
                         res.redirect('/compras');
                     }
                 });
             } else{
-                req.session.errores = {mensaje:'No se puede comprar una canción propia, ni comprar varias veces.'};
-                res.redirect('/error');
+                // alert, deberia seguir redirigiendo con mensaje
+                res.redirect('/cancion/' +cancionId+
+                    '?mensaje=No se puede comprar una canción propia, ni comprar varias veces.' +
+                    '&tipoMensaje=alert-danger');
             }
         })
-
-
     });
 
-    app.get('/compras', function (req, res) {
+    app.get('/compras', function (req, res, next) {
         let criterio = {'usuario': req.session.usuario};
         gestorBD.obtenerCompras(criterio, function (compras) {
             if (compras == null) {
-                req.session.errores = {mensaje:'Error al listar.'};
-                res.redirect('/error');
+                next(new Error('Error al listar.'));
             } else {
                 let cancionesCompradasIds = [];
                 for (i = 0; i < compras.length; i++) {
