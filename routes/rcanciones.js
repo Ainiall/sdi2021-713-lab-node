@@ -44,21 +44,36 @@ module.exports = function (app, swig, gestorBD) {
             if (canciones == null) {
                 next(new Error('Error al recuperar la canción.'));
             } else {
-                let cancionId= gestorBD.mongo.ObjectID(req.params.id);
-                sePuedeComprar(usuario,cancionId,function (puedeComprar) {
+                let cancionId = gestorBD.mongo.ObjectID(req.params.id);
+                sePuedeComprar(usuario, cancionId, function (puedeComprar) {
                     gestorBD.obtenerComentarios(criterioComentario, function (comentarios) {
-                        if (comentarios == null) {
-                            next(new Error('No hay comentarios sobre esta canción.'));
-                        } else {
-                            let respuesta = swig.renderFile('views/bcancion.html',
-                                {
-                                    cancion: canciones[0],
-                                    comentarios: comentarios,
-                                    comprar: puedeComprar
-                                });
-                            res.send(respuesta);
+                            if (comentarios == null) {
+                                next(new Error('No hay comentarios sobre esta canción.'));
+                            } else {
+                                let configuracion = {
+                                    url: 'https://www.freeforexapi.com/api/live?pairs=EURUSD',
+                                    method: 'get',
+                                    headers: {'token': 'ejemplo',}
+                                }
+                                let rest = app.get("rest");
+                                rest(configuracion, function (error, response, body) {
+                                    console.log('cod: ' + response.statusCode + ' Cuerpo :' + body);
+                                    let objetoRespuesta = JSON.parse(body);
+                                    let cambioUSD = objetoRespuesta.rates.EURUSD.rate;
+                                    // nuevo campo "usd"
+                                    canciones[0].usd = cambioUSD * canciones[0].precio;
+
+                                    let respuesta = swig.renderFile('views/bcancion.html',
+                                        {
+                                            cancion: canciones[0],
+                                            comentarios: comentarios,
+                                            comprar: puedeComprar
+                                        });
+                                    res.send(respuesta);
+                                })
+                            }
                         }
-                    });
+                    );
                 });
             }
         });
@@ -228,8 +243,8 @@ module.exports = function (app, swig, gestorBD) {
         let usuario = req.session.usuario;
         let compra = {usuario: usuario, cancionId: cancionId}
 
-        sePuedeComprar(usuario, cancionId, function (puedeComprar){
-            if(puedeComprar){
+        sePuedeComprar(usuario, cancionId, function (puedeComprar) {
+            if (puedeComprar) {
                 gestorBD.insertarCompra(compra, function (idCompra) {
                     if (idCompra == null) {
                         next(new Error('Error al comprar la canción.'));
@@ -237,9 +252,9 @@ module.exports = function (app, swig, gestorBD) {
                         res.redirect('/compras');
                     }
                 });
-            } else{
+            } else {
                 // alert, deberia seguir redirigiendo con mensaje
-                res.redirect('/cancion/' +cancionId+
+                res.redirect('/cancion/' + cancionId +
                     '?mensaje=No se puede comprar una canción propia, ni comprar varias veces.' +
                     '&tipoMensaje=alert-danger');
             }
@@ -270,17 +285,17 @@ module.exports = function (app, swig, gestorBD) {
 
 
     // AUXILIAR
-    function sePuedeComprar (usuario,cancionId, funcionCallback){
-        let criterio = {$and: [{'_id' : cancionId}, {'autor': usuario}]};
-        let criterio2 = {$and: [{'cancionId' : cancionId}, {'usuario': usuario}]};
-        gestorBD.obtenerCanciones(criterio,function (canciones){
+    function sePuedeComprar(usuario, cancionId, funcionCallback) {
+        let criterio = {$and: [{'_id': cancionId}, {'autor': usuario}]};
+        let criterio2 = {$and: [{'cancionId': cancionId}, {'usuario': usuario}]};
+        gestorBD.obtenerCanciones(criterio, function (canciones) {
             if (canciones == null || canciones.length > 0) {
                 funcionCallback(false);
-            }else {
-                gestorBD.obtenerCompras(criterio2,function (compras) {
-                    if (compras == null || compras.length > 0){
+            } else {
+                gestorBD.obtenerCompras(criterio2, function (compras) {
+                    if (compras == null || compras.length > 0) {
                         funcionCallback(false);
-                    }else{
+                    } else {
                         funcionCallback(true);
                     }
                 });
