@@ -151,7 +151,7 @@ module.exports = function (app, swig, gestorBD) {
         let criterio = {'_id': gestorBD.mongo.ObjectID(id)};
         let cancion = {nombre: req.body.nombre, genero: req.body.genero, precio: req.body.precio}
         gestorBD.modificarCancion(criterio, cancion, function (result) {
-            if (result == null) {
+            if (result == null || result.autor !== req.session.usuario) {
                 next(new Error('Error al modificar.'));
             } else {
                 paso1ModificarPortada(req.files, id, function (result) {
@@ -214,7 +214,7 @@ module.exports = function (app, swig, gestorBD) {
     app.get('/cancion/eliminar/:id', function (req, res, next) {
         let criterio = {'_id': gestorBD.mongo.ObjectID(req.params.id)};
         gestorBD.eliminarCancion(criterio, function (canciones) {
-            if (canciones == null) {
+            if (canciones == null || canciones[0].autor !== req.session.usuario) {
                 next(new Error('Error al eliminar la canción.'));
             } else {
                 // info

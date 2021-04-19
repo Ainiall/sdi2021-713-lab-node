@@ -1,6 +1,10 @@
 //Modules
 let express = require('express');
 let app = express();
+
+let jwt = require('jsonwebtoken');
+app.set('jwt', jwt);
+
 let fs = require('fs');
 let https = require('https');
 
@@ -25,6 +29,31 @@ app.use(express.static('public'));
 
 let gestorBD = require('./modules/gestorBD.js');
 gestorBD.init(app, mongo);
+
+// router Usuario Token
+let routerUsuarioToken = express.Router();
+routerUsuarioToken.use(function (req, res, next) {
+    // obtener el token, vía headers (opcionalmente GET y/o POST).
+    let token = req.headers['token'] || req.body.token || req.query.token;
+    if (token != null) {// verificar el token
+        jwt.verify(token, 'secreto', function (err, infoToken) {
+            if (err || (Date.now() / 1000 - infoToken.tiempo) > 240) {
+                res.status(403); // Forbidden
+                res.json({acceso: false, error: 'Token invalido o caducado'});
+                // También podríamos comprobar que intoToken.usuario existe
+                return;
+            } else {// dejamos correr la petición
+                res.usuario = infoToken.usuario;
+                next();
+            }
+        });
+    } else {
+        res.status(403); // Forbidden
+        res.json({acceso: false, mensaje: 'No hay Token'});
+    }
+});
+// Aplicar router Usuario Token
+app.use('/api/cancion', routerUsuarioToken);
 
 // router Usuario Session
 let routerUsuarioSession = express.Router();
@@ -123,7 +152,7 @@ app.use(function (err, req, res, next) {
     console.log('Error producido: ' + err); //mostramos el error en consola
     if (!res.headersSent) {
         res.status(400);
-        let respuesta= swig.renderFile('views/error.html',{
+        let respuesta = swig.renderFile('views/error.html', {
             mensaje: err.message,
             tipoMensaje: 'alert-danger' //por defecto
         });
