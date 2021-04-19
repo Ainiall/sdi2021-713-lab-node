@@ -27,7 +27,7 @@ module.exports = function (app, gestorBD) {
     app.delete('/api/cancion/:id', function (req, res) {
         let criterio = {'_id': gestorBD.mongo.ObjectID(req.params.id)}
         gestorBD.eliminarCancion(criterio, function (canciones) {
-            if (canciones == null || canciones[0].autor !== req.session.usuario) {
+            if (canciones == null) {
                 res.status(500);
                 res.json({error: 'Se ha producido un error'})
             } else {
@@ -58,7 +58,7 @@ module.exports = function (app, gestorBD) {
         if (req.body.genero != null) cancion.genero = req.body.genero;
         if (req.body.precio != null) cancion.precio = req.body.precio;
         gestorBD.modificarCancion(criterio, cancion, function (result) {
-            if (result == null || result.autor !== req.session.usuario) {
+            if (result == null) {
                 res.status(500);
                 res.json({error: 'Ce ha producido un error'})
             } else {
