@@ -6,7 +6,7 @@
         <thead>
         <tr>
             <th><a onclick="ordenarPorNombre()">Nombre</a></th>
-            <th>Genero</th>
+            <th><a onclick="ordenarPorGenero()">Género</a></th>
             <th><a onclick="ordenarPorPrecio()">Precio</a></th>
             <th class="col-md-1"></th>
         </tr>
@@ -96,6 +96,8 @@
     });
 
     var precioDsc = true;
+    var generoDsc = true;
+    var nombreDsc = true;
 
     function ordenarPorPrecio() {
         if (precioDsc) {
@@ -112,11 +114,38 @@
     }
 
     function ordenarPorNombre() {
-        canciones.sort(function (a, b) {
-            if (a.nombre > b.nombre) return 1;
-            if (a.nombre < b.nombre) return -1;
-            return 0;
-        });
+        if (nombreDsc) {
+            canciones.sort(function (a, b) {
+                if (a.nombre > b.nombre) return 1;
+                if (a.nombre < b.nombre) return -1;
+                return 0;
+            });
+        } else {
+            canciones.sort(function (a, b) {
+                if (a.nombre > b.nombre) return -1;
+                if (a.nombre < b.nombre) return 1;
+                return 0;
+            });
+        }
+        nombreDsc = !nombreDsc;
+        actualizarTabla(canciones);
+    }
+
+    function ordenarPorGenero() {
+        if(generoDsc){
+            canciones.sort(function (a, b) {
+                if (a.nombre > b.nombre) return 1;
+                if (a.nombre < b.nombre) return -1;
+                return 0;
+            });
+        }else{
+            canciones.sort(function (a, b) {
+                if (a.nombre > b.nombre) return -1;
+                if (a.nombre < b.nombre) return 1;
+                return 0;
+            });
+        }
+       generoDsc= !generoDsc;
         actualizarTabla(canciones);
     }
 
